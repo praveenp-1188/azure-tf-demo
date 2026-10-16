@@ -1,0 +1,10 @@
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+plan.txt
+crash.log
+backend.hcl
+.terraform.lock.hcl.bak
+node_modules/

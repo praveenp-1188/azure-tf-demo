@@ -1,0 +1,39 @@
+name: terraform-destroy
+
+# Manual teardown so the demo never lingers.
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "destroy" to confirm'
+        required: true
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  ARM_USE_OIDC: "true"
+  TF_VAR_alert_email: ${{ secrets.ALERT_EMAIL }}
+
+jobs:
+  destroy:
+    if: github.event.inputs.confirm == 'destroy'
+    runs-on: ubuntu-latest
+    environment: dev
+    defaults:
+      run:
+        working-directory: envs/dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - run: >
+          terraform init
+          -backend-config="resource_group_name=${{ secrets.TF_STATE_RG }}"
+          -backend-config="storage_account_name=${{ secrets.TF_STATE_SA }}"
+          -backend-config="container_name=tfstate"
+          -backend-config="key=dev.terraform.tfstate"
+      - run: terraform destroy -auto-approve -input=false
