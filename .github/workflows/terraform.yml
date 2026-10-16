@@ -37,8 +37,12 @@ jobs:
           terraform init -backend=false
           terraform validate
       - uses: terraform-linters/setup-tflint@v4
+      - name: TFLint init (download rulesets)
+        run: tflint --init --config "$GITHUB_WORKSPACE/.tflint.hcl"
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
       - name: TFLint
-        run: tflint --recursive
+        run: tflint --recursive --config "$GITHUB_WORKSPACE/.tflint.hcl"
 
   plan:
     needs: validate
